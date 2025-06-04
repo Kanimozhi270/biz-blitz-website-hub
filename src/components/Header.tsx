@@ -1,13 +1,22 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Phone, Mail, MessageCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, Phone, Mail, MessageCircle, LogIn, LogOut, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loginStatus = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(loginStatus === 'true');
+  }, [location]);
 
   const handleCall = () => {
     window.open('tel:+919080809998', '_self');
@@ -19,6 +28,17 @@ const Header = () => {
 
   const handleEmail = () => {
     window.open('mailto:contact@nithraconsulting.com', '_self');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userEmail');
+    setIsLoggedIn(false);
+    toast({
+      title: "Logged out successfully",
+      description: "Thank you for using Nithra Consulting Services",
+    });
+    navigate('/');
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -64,6 +84,14 @@ const Header = () => {
             >
               Contact
             </Link>
+            {isLoggedIn && (
+              <Link 
+                to="/dashboard" 
+                className={`transition-colors ${isActive('/dashboard') ? 'text-purple-600 font-medium' : 'text-gray-700 hover:text-purple-600'}`}
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           {/* Desktop Actions */}
@@ -76,6 +104,19 @@ const Header = () => {
               <MessageCircle size={16} />
               <span>WhatsApp</span>
             </Button>
+            {isLoggedIn ? (
+              <Button onClick={handleLogout} variant="outline" size="sm" className="flex items-center space-x-1 text-red-600 border-red-600 hover:bg-red-50">
+                <LogOut size={16} />
+                <span>Logout</span>
+              </Button>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                  <LogIn size={16} />
+                  <span>Login</span>
+                </Button>
+              </Link>
+            )}
             <Button className="bg-purple-600 hover:bg-purple-700">Get Started</Button>
           </div>
 
@@ -120,6 +161,15 @@ const Header = () => {
               >
                 Contact
               </Link>
+              {isLoggedIn && (
+                <Link 
+                  to="/dashboard" 
+                  className={`transition-colors ${isActive('/dashboard') ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
             </nav>
             
             <div className="flex flex-col space-y-3 mt-6">
@@ -131,6 +181,19 @@ const Header = () => {
                 <MessageCircle size={16} />
                 <span>WhatsApp</span>
               </Button>
+              {isLoggedIn ? (
+                <Button onClick={handleLogout} variant="outline" size="sm" className="flex items-center justify-center space-x-1 text-red-600 border-red-600">
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </Button>
+              ) : (
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full flex items-center justify-center space-x-1">
+                    <LogIn size={16} />
+                    <span>Login</span>
+                  </Button>
+                </Link>
+              )}
               <Button className="bg-purple-600 hover:bg-purple-700">Get Started</Button>
             </div>
           </div>
