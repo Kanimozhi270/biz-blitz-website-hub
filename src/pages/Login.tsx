@@ -20,19 +20,19 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Demo login - replace with real authentication
-    if (email === 'admin@nithraconsulting.com' && password === 'admin123') {
+    // Basic email and password validation
+    if (email && password && email.includes('@') && password.length >= 6) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', email);
       toast({
         title: "Login Successful",
-        description: "Welcome back to Nithra Consulting Services!",
+        description: "Welcome to Nithra Consulting Services!",
       });
       navigate('/dashboard');
     } else {
       toast({
         title: "Login Failed",
-        description: "Invalid email or password. Try admin@nithraconsulting.com / admin123",
+        description: "Please enter a valid email and password (minimum 6 characters)",
         variant: "destructive",
       });
     }
@@ -90,6 +90,7 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10"
                     required
+                    minLength={6}
                   />
                   <button
                     type="button"
@@ -111,9 +112,6 @@ const Login = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Demo credentials: admin@nithraconsulting.com / admin123
-              </p>
               <p className="text-sm text-gray-600 mt-2">
                 Don't have an account?{' '}
                 <Link to="/contact" className="text-purple-600 hover:underline">

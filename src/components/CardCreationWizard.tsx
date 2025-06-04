@@ -48,7 +48,7 @@ const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
 
   const steps = [
     { number: 1, title: 'Company Name', key: 'company' },
-    { number: 2, title: 'Select Theme', key: 'theme' },
+    { number: 2, title: 'Select Template', key: 'template' },
     { number: 3, title: 'Company Details', key: 'details' },
     { number: 4, title: 'Social Links', key: 'social' },
     { number: 5, title: 'Payment Options', key: 'payment' },
