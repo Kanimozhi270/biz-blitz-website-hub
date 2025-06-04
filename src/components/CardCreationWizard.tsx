@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, ArrowRight, Check, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Upload, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ThemeSelector from '@/components/ThemeSelector';
 
@@ -15,6 +14,8 @@ interface CardCreationWizardProps {
 
 const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [cardCreated, setCardCreated] = useState(false);
+  const [cardUrl, setCardUrl] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     selectedTheme: 1,
@@ -56,6 +57,11 @@ const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
     { number: 8, title: 'Preview Card', key: 'preview' }
   ];
 
+  const generateCardUrl = (companyName: string) => {
+    const sanitizedName = companyName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+    return `ncsdigitalcard.com/${sanitizedName}`;
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -76,12 +82,69 @@ const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
   };
 
   const handleSubmit = () => {
+    const generatedUrl = generateCardUrl(formData.companyName);
+    setCardUrl(generatedUrl);
+    setCardCreated(true);
+    
+    // Store card data in localStorage (in real app, this would be saved to database)
+    const cardData = { ...formData, url: generatedUrl, id: Date.now() };
+    const existingCards = JSON.parse(localStorage.getItem('digitalCards') || '[]');
+    existingCards.push(cardData);
+    localStorage.setItem('digitalCards', JSON.stringify(existingCards));
+    
     toast({
       title: "Card Created Successfully!",
-      description: "Your digital business card has been created and is now active.",
+      description: `Your digital business card is now live at ${generatedUrl}`,
     });
-    onClose();
   };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(`https://${cardUrl}`);
+    toast({
+      title: "URL Copied!",
+      description: "The card URL has been copied to your clipboard",
+    });
+  };
+
+  const openCard = () => {
+    const sanitizedName = formData.companyName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+    window.open(`/card/${sanitizedName}`, '_blank');
+  };
+
+  if (cardCreated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-green-600">🎉 Card Created Successfully!</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Your digital business card is now live at:</p>
+              <div className="bg-gray-100 p-3 rounded-lg border">
+                <p className="font-mono text-sm break-all">{cardUrl}</p>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button onClick={copyToClipboard} variant="outline" className="flex-1">
+                <Copy size={16} className="mr-2" />
+                Copy URL
+              </Button>
+              <Button onClick={openCard} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                <ExternalLink size={16} className="mr-2" />
+                View Card
+              </Button>
+            </div>
+            
+            <Button onClick={onClose} variant="outline" className="w-full">
+              Back to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -97,6 +160,11 @@ const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
                 onChange={(e) => handleInputChange('companyName', e.target.value)}
                 className="mt-1"
               />
+              {formData.companyName && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Your card will be available at: <span className="font-mono">{generateCardUrl(formData.companyName)}</span>
+                </p>
+              )}
             </div>
           </div>
         );
@@ -369,6 +437,12 @@ const CardCreationWizard: React.FC<CardCreationWizardProps> = ({ onClose }) => {
               <p>{formData.email}</p>
             </div>
             <p className="text-gray-600">This is a preview of your digital business card</p>
+            {formData.companyName && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Your card will be available at:</p>
+                <p className="font-mono text-blue-600">{generateCardUrl(formData.companyName)}</p>
+              </div>
+            )}
           </div>
         );
 
